@@ -1,0 +1,162 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_rpi_survey_data_name": {
+            "defaultValue": "rpi-survey-data",
+            "type": "String"
+        },
+        "serverfarms_ASP_jtraspberrypi_b61f_externalid": {
+            "defaultValue": "/subscriptions/eb913143-4a5b-4653-97be-ed59620b78e9/resourceGroups/jt-raspberry-pi/providers/Microsoft.Web/serverfarms/ASP-jtraspberrypi-b61f",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_rpi_survey_data_name')]",
+            "location": "West US 2",
+            "kind": "functionapp",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_rpi_survey_data_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_rpi_survey_data_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[parameters('serverfarms_ASP_jtraspberrypi_b61f_externalid')]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {},
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/web')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "phpVersion": "5.6",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$rpi-survey-data",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "cors": {
+                    "allowedOrigins": [
+                        "https://functions.azure.com",
+                        "https://functions-staging.azure.com",
+                        "https://functions-next.azure.com"
+                    ],
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/rpi-message-routing')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/site/wwwroot/rpi-message-routing/",
+                "script_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/site/wwwroot/rpi-message-routing/index.js",
+                "config_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/site/wwwroot/rpi-message-routing/function.json",
+                "href": "https://rpi-survey-data.azurewebsites.net/admin/functions/rpi-message-routing",
+                "config": {},
+                "test_data": "[[\n  {\n    \"LocalTime\": \"2021-02-17 15:236:01\",\n    \" GPSTime\": \"1900-01-00 00:00:00\",\n    \" ESSID\": \"\",\n    \" BSSID\": \"D8:6C:63:D3:1E:0B\",\n    \" Power\": \"-61\",\n    \" Security\": \"\",\n    \" Latitude\": \"0.000000\",\n    \" Longitude\": \"0.000000\",\n    \" Latitude Error\": \"0.000\",\n    \" Longitude Error\": \"0.000\"\n  },\n  {\n    \"LocalTime\": \"2021-02-17 16:45:01\",\n    \" GPSTime\": \"1900-01-00 00:00:00\",\n    \" ESSID\": \"\",\n    \" BSSID\": \"DA:6C:63:D3:1E:08\",\n    \" Power\": \"-59\",\n    \" Security\": \"\",\n    \" Latitude\": \"0.000000\",\n    \" Longitude\": \"0.000000\",\n    \" Latitude Error\": \"0.000\",\n    \" Longitude Error\": \"0.000\"\n  }\n]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/', parameters('sites_rpi_survey_data_name'), '.azurewebsites.net')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "siteName": "rpi-survey-data",
+                "hostNameType": "Verified"
+            }
+        }
+    ]
+}
