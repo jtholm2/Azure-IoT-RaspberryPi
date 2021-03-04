@@ -1,0 +1,9 @@
+FROM sreexperimentation.azurecr.io/raspbian_aircrack:v2
+
+WORKDIR /root
+
+VOLUME /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+COPY . .
+
+CMD [ "python3", "-u", "./main.py" ]
