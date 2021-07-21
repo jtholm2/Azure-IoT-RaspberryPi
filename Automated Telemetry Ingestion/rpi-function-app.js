@@ -8,7 +8,7 @@ module.exports = function (context, IoTHubMessage) {
     const connString = process.env['COSMOS_MONGO_CONN_STRING'];
     const dbName = 'rpisurveylogs';
     const collectionName = context.bindingData.systemPropertiesArray[0]["iothub-connection-device-id"];
-    // const collectionName = 'rpisurvey1';
+
     const client = new mongoClient(connString, {useNewUrlParser: true, authSource: dbName});
     async function init() {
         context.log(client.isConnected()); // false
