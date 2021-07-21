@@ -23,7 +23,7 @@ async def main():
 
         def formatData(fileToFormat):
             list = []
-            with open(fileToFormat, mode='r') as csv_file:
+            with open(fileToFormat, mode='r', encoding='utf8') as csv_file:
                 keys = csv_file.readline().strip().split(',')
                 for line in csv_file:
                     line = line.strip()
@@ -43,10 +43,20 @@ async def main():
                 time.sleep(15)
                 print('stopping scan')
                 os.system('screen -d -m sudo pkill airodump-ng')
-                jsonToSend = formatData('testEndpointOutput-01.log.csv')
+                print('first screen worked')
+                
+                try:
+                    jsonToSend = formatData('testEndpointOutput-01.log.csv')
+                except (Exception) as e:
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(e).__name__, e.args)
+                    print (message)
+                
+                print('data is formatted')
                 os.system('screen -d -m sudo rm testEndpointOutput-01.log.csv testEndpointOutput-01.gps')
+                print('second screen worked')
                 message = Message(jsonToSend)
-
+                print('message created')
                 # Send the message.
                 print( "Sending message" )
                 await module_client.send_message_to_output(message, "output1")

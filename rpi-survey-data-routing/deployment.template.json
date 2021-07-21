@@ -33,7 +33,14 @@
             "settings": {
               "image": "mcr.microsoft.com/azureiotedge-hub:1.0",
               "createOptions": {
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
+                },
                 "HostConfig": {
+                  "NetworkMode": "host",
+                  "Privileged": true,
                   "PortBindings": {
                     "5671/tcp": [
                       {
@@ -65,9 +72,14 @@
             "settings": {
               "image": "${MODULES.rpi_survey_routing}",
               "createOptions": {
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
+                },
                 "HostConfig": {
-                  "Privileged": true,
-                  "Binds": ["/sys:/sys"]
+                  "NetworkMode": "host",
+                  "Privileged": true
                 }
               }
             }
