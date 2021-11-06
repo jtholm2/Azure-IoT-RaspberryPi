@@ -1,0 +1,1011 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "IotHubs_jt_iot_hub_connectionString": {
+            "type": "SecureString"
+        },
+        "IotHubs_jt_iot_hub_containerName": {
+            "type": "SecureString"
+        },
+        "databaseAccounts_rpisurveylogs_createMode": {
+            "type": "SecureString"
+        },
+        "sites_rpi_survey_data_name": {
+            "defaultValue": "rpi-survey-data",
+            "type": "String"
+        },
+        "IotHubs_jt_iot_hub_name": {
+            "defaultValue": "jt-iot-hub",
+            "type": "String"
+        },
+        "storageAccounts_jtrpistorage_name": {
+            "defaultValue": "jtrpistorage",
+            "type": "String"
+        },
+        "serverfarms_ASP_jtraspberrypi_b61f_name": {
+            "defaultValue": "ASP-jtraspberrypi-b61f",
+            "type": "String"
+        },
+        "iotSecuritySolutions_jt_iot_hub_name": {
+            "defaultValue": "jt-iot-hub",
+            "type": "String"
+        },
+        "databaseAccounts_rpisurveylogs_name": {
+            "defaultValue": "rpisurveylogs",
+            "type": "String"
+        },
+        "storageAccounts_raspberrypidatalake_name": {
+            "defaultValue": "raspberrypidatalake",
+            "type": "String"
+        },
+        "registries_sreexperimentation_name": {
+            "defaultValue": "sreexperimentation",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2021-06-01-preview",
+            "name": "[parameters('registries_sreexperimentation_name')]",
+            "location": "westus2",
+            "sku": {
+                "name": "Standard",
+                "tier": "Standard"
+            },
+            "properties": {
+                "adminUserEnabled": true,
+                "policies": {
+                    "quarantinePolicy": {
+                        "status": "disabled"
+                    },
+                    "trustPolicy": {
+                        "type": "Notary",
+                        "status": "disabled"
+                    },
+                    "retentionPolicy": {
+                        "days": 7,
+                        "status": "disabled"
+                    },
+                    "exportPolicy": {
+                        "status": "enabled"
+                    }
+                },
+                "encryption": {
+                    "status": "disabled"
+                },
+                "dataEndpointEnabled": false,
+                "publicNetworkAccess": "Enabled",
+                "networkRuleBypassOptions": "AzureServices",
+                "zoneRedundancy": "Disabled",
+                "anonymousPullEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Devices/IotHubs",
+            "apiVersion": "2021-07-01",
+            "name": "[parameters('IotHubs_jt_iot_hub_name')]",
+            "location": "westus2",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "identity": {
+                "type": "None"
+            },
+            "properties": {
+                "ipFilterRules": [],
+                "eventHubEndpoints": {
+                    "events": {
+                        "retentionTimeInDays": 1,
+                        "partitionCount": 4
+                    }
+                },
+                "routing": {
+                    "endpoints": {
+                        "serviceBusQueues": [],
+                        "serviceBusTopics": [],
+                        "eventHubs": [],
+                        "storageContainers": []
+                    },
+                    "routes": [],
+                    "fallbackRoute": {
+                        "name": "$fallback",
+                        "source": "DeviceMessages",
+                        "condition": "true",
+                        "endpointNames": [
+                            "events"
+                        ],
+                        "isEnabled": true
+                    }
+                },
+                "storageEndpoints": {
+                    "$default": {
+                        "sasTtlAsIso8601": "PT1H",
+                        "connectionString": "[parameters('IotHubs_jt_iot_hub_connectionString')]",
+                        "containerName": "[parameters('IotHubs_jt_iot_hub_containerName')]"
+                    }
+                },
+                "messagingEndpoints": {
+                    "fileNotifications": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "enableFileUploadNotifications": false,
+                "cloudToDevice": {
+                    "maxDeliveryCount": 10,
+                    "defaultTtlAsIso8601": "PT1H",
+                    "feedback": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "features": "None"
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[parameters('databaseAccounts_rpisurveylogs_name')]",
+            "location": "West US 2",
+            "tags": {
+                "defaultExperience": "Azure Cosmos DB for MongoDB API",
+                "hidden-cosmos-mmspecial": "",
+                "CosmosAccountType": "Non-Production"
+            },
+            "kind": "MongoDB",
+            "identity": {
+                "type": "None"
+            },
+            "properties": {
+                "publicNetworkAccess": "Enabled",
+                "enableAutomaticFailover": false,
+                "enableMultipleWriteLocations": false,
+                "isVirtualNetworkFilterEnabled": false,
+                "virtualNetworkRules": [],
+                "disableKeyBasedMetadataWriteAccess": false,
+                "enableFreeTier": true,
+                "enableAnalyticalStorage": false,
+                "analyticalStorageConfiguration": {},
+                "databaseAccountOfferType": "Standard",
+                "defaultIdentity": "FirstPartyIdentity",
+                "networkAclBypass": "None",
+                "disableLocalAuth": false,
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "Session",
+                    "maxIntervalInSeconds": 5,
+                    "maxStalenessPrefix": 100
+                },
+                "apiProperties": {
+                    "serverVersion": "3.6"
+                },
+                "locations": [
+                    {
+                        "locationName": "West US 2",
+                        "provisioningState": "Succeeded",
+                        "failoverPriority": 0,
+                        "isZoneRedundant": false
+                    }
+                ],
+                "cors": [],
+                "capabilities": [
+                    {
+                        "name": "EnableMongo"
+                    },
+                    {
+                        "name": "DisableRateLimitingResponses"
+                    }
+                ],
+                "ipRules": [],
+                "backupPolicy": {
+                    "type": "Periodic",
+                    "periodicModeProperties": {
+                        "backupIntervalInMinutes": 240,
+                        "backupRetentionIntervalInHours": 8,
+                        "backupStorageRedundancy": "Geo"
+                    }
+                },
+                "networkAclBypassResourceIds": [],
+                "diagnosticLogSettings": {
+                    "enableFullTextQuery": "None"
+                },
+                "createMode": "[parameters('databaseAccounts_rpisurveylogs_createMode')]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-06-01",
+            "name": "[parameters('storageAccounts_jtrpistorage_name')]",
+            "location": "westus2",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-06-01",
+            "name": "[parameters('storageAccounts_raspberrypidatalake_name')]",
+            "location": "westus2",
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "allowSharedKeyAccess": true,
+                "isHnsEnabled": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('serverfarms_ASP_jtraspberrypi_b61f_name')]",
+            "location": "West US 2",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[concat(parameters('databaseAccounts_rpisurveylogs_name'), '/', parameters('databaseAccounts_rpisurveylogs_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_rpisurveylogs_name'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "id": "rpisurveylogs"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Security/iotSecuritySolutions",
+            "apiVersion": "2019-08-01",
+            "name": "[parameters('iotSecuritySolutions_jt_iot_hub_name')]",
+            "location": "westus2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Devices/IotHubs', parameters('IotHubs_jt_iot_hub_name'))]"
+            ],
+            "properties": {
+                "displayName": "[parameters('iotSecuritySolutions_jt_iot_hub_name')]",
+                "status": "Enabled",
+                "export": [],
+                "disabledDataSources": [],
+                "additionalWorkspaces": [],
+                "iotHubs": [
+                    "[resourceId('Microsoft.Devices/IotHubs', parameters('IotHubs_jt_iot_hub_name'))]"
+                ],
+                "userDefinedResources": {
+                    "query": "where type != \"microsoft.devices/iothubs\" | where (subscriptionId == \"eb913143-4a5b-4653-97be-ed59620b78e9\" and resourceGroup in~ (\"jt-raspberry-pi\")) | project id, name, type",
+                    "querySubscriptions": [
+                        "eb913143-4a5b-4653-97be-ed59620b78e9"
+                    ]
+                },
+                "recommendationsConfiguration": [
+                    {
+                        "recommendationType": "IoT_ACRAuthentication",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_AgentSendsUnutilizedMessages",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_AuditdNotReceived",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_Baseline",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_EdgeHubMemOptimize",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_EdgeLoggingOptions",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_InconsistentModuleSettings",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_InstallAgent",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_IPFilter_DenyAll",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_IPFilter_PermissiveRule",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_OpenPorts",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_PermissiveFirewallPolicy",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_PermissiveInputFirewallRules",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_PermissiveOutputFirewallRules",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_PrivilegedDockerOptions",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_RecommendedIpRulesByBaseLine",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_SharedCredentials",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_VulnerableTLSCipherSuite",
+                        "status": "Enabled"
+                    },
+                    {
+                        "recommendationType": "IoT_EOL_OSversion",
+                        "status": "Enabled"
+                    }
+                ],
+                "unmaskedIpLoggingStatus": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_raspberrypidatalake_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_raspberrypidatalake_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_raspberrypidatalake_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_raspberrypidatalake_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_raspberrypidatalake_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_raspberrypidatalake_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_raspberrypidatalake_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_raspberrypidatalake_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('sites_rpi_survey_data_name')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_jtraspberrypi_b61f_name'))]"
+            ],
+            "kind": "functionapp",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_rpi_survey_data_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_rpi_survey_data_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_jtraspberrypi_b61f_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": false,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "837369AA9C0E2A5977ACD3DDFD78D014BBFDF77C44DC3E7CE0160ED0F1905358",
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/ftp')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/scm')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/web')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "phpVersion": "5.6",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$rpi-survey-data",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "cors": {
+                    "allowedOrigins": [
+                        "https://functions.azure.com",
+                        "https://functions-staging.azure.com",
+                        "https://functions-next.azure.com"
+                    ],
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.0",
+                "ftpsState": "AllAllowed",
+                "preWarmedInstanceCount": 0,
+                "functionAppScaleLimit": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/rpi-message-routing')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/site/wwwroot/rpi-message-routing/",
+                "script_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/site/wwwroot/rpi-message-routing/index.js",
+                "config_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/site/wwwroot/rpi-message-routing/function.json",
+                "test_data_href": "https://rpi-survey-data.azurewebsites.net/admin/vfs/data/Functions/sampledata/rpi-message-routing.dat",
+                "href": "https://rpi-survey-data.azurewebsites.net/admin/functions/rpi-message-routing",
+                "config": {},
+                "test_data": "[[\n  {\n    \"LocalTime\": \"2021-02-17 15:236:01\",\n    \" GPSTime\": \"1900-01-00 00:00:00\",\n    \" ESSID\": \"\",\n    \" BSSID\": \"D8:6C:63:D3:1E:0B\",\n    \" Power\": \"-61\",\n    \" Security\": \"\",\n    \" Latitude\": \"0.000000\",\n    \" Longitude\": \"0.000000\",\n    \" Latitude Error\": \"0.000\",\n    \" Longitude Error\": \"0.000\"\n  },\n  {\n    \"LocalTime\": \"2021-02-17 16:45:01\",\n    \" GPSTime\": \"1900-01-00 00:00:00\",\n    \" ESSID\": \"\",\n    \" BSSID\": \"DA:6C:63:D3:1E:08\",\n    \" Power\": \"-59\",\n    \" Security\": \"\",\n    \" Latitude\": \"0.000000\",\n    \" Longitude\": \"0.000000\",\n    \" Latitude Error\": \"0.000\",\n    \" Longitude Error\": \"0.000\"\n  }\n]",
+                "language": "node",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2021-02-01",
+            "name": "[concat(parameters('sites_rpi_survey_data_name'), '/', parameters('sites_rpi_survey_data_name'), '.azurewebsites.net')]",
+            "location": "West US 2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_rpi_survey_data_name'))]"
+            ],
+            "properties": {
+                "siteName": "rpi-survey-data",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases/collections",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[concat(parameters('databaseAccounts_rpisurveylogs_name'), '/', parameters('databaseAccounts_rpisurveylogs_name'), '/ben-rpi')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/mongodbDatabases', parameters('databaseAccounts_rpisurveylogs_name'), parameters('databaseAccounts_rpisurveylogs_name'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_rpisurveylogs_name'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "id": "ben-rpi",
+                    "indexes": [
+                        {
+                            "key": {
+                                "keys": [
+                                    "_id"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases/collections",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[concat(parameters('databaseAccounts_rpisurveylogs_name'), '/', parameters('databaseAccounts_rpisurveylogs_name'), '/rpi4-jt')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/mongodbDatabases', parameters('databaseAccounts_rpisurveylogs_name'), parameters('databaseAccounts_rpisurveylogs_name'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_rpisurveylogs_name'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "id": "rpi4-jt",
+                    "indexes": [
+                        {
+                            "key": {
+                                "keys": [
+                                    "_id"
+                                ]
+                            }
+                        },
+                        {
+                            "key": {
+                                "keys": [
+                                    "$**"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases/collections",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[concat(parameters('databaseAccounts_rpisurveylogs_name'), '/', parameters('databaseAccounts_rpisurveylogs_name'), '/rpisurvey1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/mongodbDatabases', parameters('databaseAccounts_rpisurveylogs_name'), parameters('databaseAccounts_rpisurveylogs_name'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_rpisurveylogs_name'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "id": "rpisurvey1",
+                    "indexes": [
+                        {
+                            "key": {
+                                "keys": [
+                                    "_id"
+                                ]
+                            }
+                        },
+                        {
+                            "key": {
+                                "keys": [
+                                    "$**"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases/throughputSettings",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[concat(parameters('databaseAccounts_rpisurveylogs_name'), '/', parameters('databaseAccounts_rpisurveylogs_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/mongodbDatabases', parameters('databaseAccounts_rpisurveylogs_name'), parameters('databaseAccounts_rpisurveylogs_name'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_rpisurveylogs_name'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "throughput": 400
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/azure-webjobs-eventhub')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_raspberrypidatalake_name'), '/default/copycosmostoadls')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_raspberrypidatalake_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_raspberrypidatalake_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/rpi-csvs')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/rpi-kmls')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/rpi-survey-databb17')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "accessTier": "TransactionOptimized",
+                "shareQuota": 5120,
+                "enabledProtocols": "SMB"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/azure-webjobs-blobtrigger-rpi-survey-data')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('storageAccounts_jtrpistorage_name'), '/default/webjobs-blobtrigger-poison')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_jtrpistorage_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_jtrpistorage_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        }
+    ]
+}

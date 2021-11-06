@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "IotHubs_jt_iot_hub_connectionString": {
+            "value": null
+        },
+        "IotHubs_jt_iot_hub_containerName": {
+            "value": null
+        },
+        "databaseAccounts_rpisurveylogs_createMode": {
+            "value": null
+        },
+        "sites_rpi_survey_data_name": {
+            "value": null
+        },
+        "IotHubs_jt_iot_hub_name": {
+            "value": null
+        },
+        "storageAccounts_jtrpistorage_name": {
+            "value": null
+        },
+        "serverfarms_ASP_jtraspberrypi_b61f_name": {
+            "value": null
+        },
+        "iotSecuritySolutions_jt_iot_hub_name": {
+            "value": null
+        },
+        "databaseAccounts_rpisurveylogs_name": {
+            "value": null
+        },
+        "storageAccounts_raspberrypidatalake_name": {
+            "value": null
+        },
+        "registries_sreexperimentation_name": {
+            "value": null
+        }
+    }
+}
