@@ -1,7 +1,0 @@
-FROM sreexperimentation.azurecr.io/raspbian_aircrack:v3
-
-WORKDIR /root
-
-COPY . .
-
-CMD [ "python3", "./main.py" ]
